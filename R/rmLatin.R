@@ -15,13 +15,13 @@
 #' @keywords internal
 #'
 #' @examples
-#'   nomes <- c("Thomé", "Muñoz", "œuf")
-#'   Encoding(nomes) <- "latin1"
+#'   nomes <- c("Thom\u00e9", "Mu\u00f1oz", "\u0153uf")
 #'   nomes
 #'
+#' \dontrun{
 #'   rmLatin(nomes)
+#' }
 #'
-#' @export
 rmLatin <- function(x) {
 
   #Getting the special characters to be replaced

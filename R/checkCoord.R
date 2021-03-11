@@ -1,7 +1,7 @@
 #' @title Check Geographical Coordinates
 #'
 #' @description This function makes the check of the coordinates
-#' against the world and Latin-American maps. It optionally returns the
+#' against the world and Latin-American maps. Optionally, it returns the
 #' distance between the original coordinates and those from a gazetteer
 #' for coordinates not validated at the county level.
 #'
@@ -13,9 +13,9 @@
 #'   output of function `getCoord()`)
 #' @param res.gazet Column with the locality resolution level retrieved from the
 #'   gazetteer
-#' @param dist.center Logical. Should the distance between the original
-#'   coordinates and those retrieved in the gazetteer be returned. Defaults to
-#'   FALSE.
+#' @param dist.center Logical. Should the distance (in meters) between the
+#'   original coordinates and those retrieved in the gazetteer be returned?
+#'   Defaults to FALSE.
 #' @param lon.gazet Column with the longitude obtained from a gazetteer
 #' @param lat.gazet Column with the latitude obtained from a gazetteer
 #' @param keep.cols character. Name of columns that should be kept in the
@@ -42,7 +42,6 @@
 #' administrative levels from the maps: 'country.check', 'state.check' and
 #' 'county.check'.
 #'
-
 #'
 #' @export checkCoord
 #'
@@ -56,6 +55,12 @@ checkCoord <- function(x,
                        lon.gazet = "longitude.gazetteer",
                        lat.gazet = "latitude.gazetteer",
                        keep.cols = c("geo.check", "distCentroid_m")) {
+
+  #Escaping R CMD check notes from using dplyr syntax
+  NAME_0 <- pais_latam <- pais_wo <- NULL
+  #Escaping R CMD check notes
+  worldMap <- worldMap
+  latamMap <- latamMap
 
   ## check input
   if (!class(x)[1] == "data.frame")

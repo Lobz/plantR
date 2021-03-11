@@ -7,7 +7,7 @@
 #' @param sep.in a vector of the symbols separating multiple names. Default to:
 #'   ";", "&", "|", " e ", " y ", " and ", " und ", and " et ".
 #' @param sep.out a character string with the symbol separating multiple names
-#'   in the output string. Defaults to "; ".
+#'   in the output string. Defaults to "|".
 #' @param special.char logical. Should special characters be maintained? Default
 #'   to FALSE.
 #'
@@ -35,6 +35,8 @@
 #'
 #' @importFrom stringr str_trim
 #'
+#' @encoding UTF-8
+#'
 #' @examples
 #'   names <- c("J.E.Q. Faria Jr.",
 #'   "Leitão F°, H.F.", "Gert G. Hatschbach, et al.",
@@ -48,11 +50,12 @@
 #'   fixName(names, special.char = TRUE)
 #'   fixName(names, sep.out = " | ")
 #'
+#'
 #' @export fixName
 #'
 fixName <- function(nomes,
                     sep.in = c(";","&","|"," e "," y "," and "," und "," et "),
-                    sep.out = "; ",
+                    sep.out = "|",
                     special.char = FALSE) {
   #Defining the input and temporary separators
   sep.in2 <- sep.in[grepl('[[:alpha:]]', sep.in) & !grepl(' et ', sep.in)]
@@ -72,10 +75,22 @@ fixName <- function(nomes,
   sep0 <- "__"
 
   #Separation between names/initials
-  nomes <- gsub("(?<=[A-ZÀ-Ý])\\.(?=[a-zà-ý])", "\\1. ", nomes, perl = TRUE)
-  nomes <- gsub("(?<=[A-ZÀ-Ý])\\.([A-ZÀ-Ý])([a-zà-ý])", ". \\1\\2", nomes, perl = TRUE)
-  nomes <- gsub("(?<=[a-zà-ý])([A-ZÀ-Ý])\\.", " \\1.", nomes, perl = TRUE)
-  nomes <- gsub("(?<=[a-zà-ý]),(?=[a-zà-ýA-ZÀ-Ý])", "\\1, \\2", nomes, perl = TRUE)
+  nomes <- gsub("(?<=\\p{Lu})\\.(?=\\p{Ll})", "\\1. ",
+                nomes, perl = TRUE)
+  nomes <- gsub("(?<=\\p{Lu})\\.(\\p{Lu})(\\p{Ll})", ". \\1\\2",
+                nomes, perl = TRUE)
+  nomes <- gsub("(?<=\\p{Ll})(\\p{Lu})\\.", " \\1.",
+                nomes, perl = TRUE)
+  nomes <- gsub("(?<=\\p{Ll}),(?=\\p{L})", "\\1, \\2",
+                nomes, perl = TRUE)
+  # nomes <- gsub("(?<=[A-ZÀ-Ý])\\.(?=[a-zà-ý])", "\\1. ",
+  #               nomes, perl = TRUE)
+  # nomes <- gsub("(?<=[A-ZÀ-Ý])\\.([A-ZÀ-Ý])([a-zà-ý])", ". \\1\\2",
+  #               nomes, perl = TRUE)
+  # nomes <- gsub("(?<=[a-zà-ý])([A-ZÀ-Ý])\\.", " \\1.",
+  #               nomes, perl = TRUE)
+  # nomes <- gsub("(?<=[a-zà-ý]),(?=[a-zà-ýA-ZÀ-Ý])", "\\1, \\2",
+  #               nomes, perl = TRUE)
   nomes <- gsub("\\s+", " ", nomes, perl = TRUE)
 
   #Separation between multiple authors
@@ -95,6 +110,7 @@ fixName <- function(nomes,
   nomes <- gsub('^det\\. ', "", nomes, perl = TRUE, ignore.case = TRUE)
   nomes <- gsub('^det\\.', "", nomes, perl = TRUE, ignore.case = TRUE)
   nomes <- gsub(" \\(\\?\\) ", "", nomes, perl = TRUE)
+  nomes <- gsub("([[:alpha:]])(\\()", "\\1 \\2", nomes, perl = TRUE)
 
   #Removing unwanted character
   nomes <- gsub("[0-9]", "", nomes, perl = TRUE)
@@ -129,17 +145,27 @@ fixName <- function(nomes,
     nomes <- gsub(' et ', sep0, nomes, fixed = TRUE)
 
   #Compound names
-  nomes <- gsub(" jr\\.| jr$", " Junior", nomes,
+  nomes <- gsub(" jr\\.|Jr\\.", " Junior", nomes,
+                perl = TRUE)
+  nomes <- gsub(" Jr$", " Junior", nomes,
+                perl = TRUE)
+  nomes <- gsub(" - j\u00fanior", " J\u00fanior", nomes,
                 perl = TRUE, ignore.case = TRUE)
-  nomes <- gsub(" - j\u00fanior| - junior", " Junior", nomes,
+  nomes <- gsub(", junior,", " Junior,", nomes,
                 perl = TRUE, ignore.case = TRUE)
-  nomes <- gsub(", junior,|, junior,", " Junior,", nomes,
+  nomes <- gsub(", j\u00fanior,", " J\u00fanior,", nomes,
                 perl = TRUE, ignore.case = TRUE)
-  nomes <- gsub("-junior|-junior", " Junior", nomes,
+  nomes <- gsub(" - junior", " Junior", nomes,
                 perl = TRUE, ignore.case = TRUE)
-  nomes <- gsub("j\u00fanior", "Junior", nomes,
+  nomes <- gsub(" - j\u00fanior", " J\u00fanior", nomes,
                 perl = TRUE, ignore.case = TRUE)
-  nomes <- gsub(" F\u00ba| F\u00ba", " Filho", nomes,
+  nomes <- gsub("-junior", " Junior", nomes,
+                perl = TRUE, ignore.case = TRUE)
+  nomes <- gsub("-j\u00fanior", " J\u00fanior", nomes,
+                perl = TRUE, ignore.case = TRUE)
+  nomes <- gsub("j\u00fanior", "J\u00fanior", nomes,
+                perl = TRUE, ignore.case = TRUE)
+  nomes <- gsub(" F\u00ba| F\u00b0", " Filho", nomes,
                 perl = TRUE, ignore.case = TRUE)
   nomes <- gsub(' f\\.,', " Filho", nomes,
                 perl = TRUE, ignore.case = TRUE)
@@ -151,7 +177,7 @@ fixName <- function(nomes,
                 perl = TRUE, ignore.case = TRUE)
   nomes <- gsub(" Filho\\.,", " Filho,", nomes,
                 perl = TRUE, ignore.case = TRUE)
-  nomes <- gsub(" Sobr\u00ba| Sobr\u00aa", " Sobrinho", nomes,
+  nomes <- gsub(" Sobr\u00ba| Sobr\u00b0", " Sobrinho", nomes,
                 perl = TRUE, ignore.case = TRUE)
   nomes <- gsub(" Sobrinho\\.,| Sobr\\.,", " Sobrinho,", nomes,
                 perl = TRUE, ignore.case = TRUE)

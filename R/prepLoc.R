@@ -29,12 +29,11 @@
 #' @seealso \link[plantR]{strLoc}
 #'
 #' @importFrom stringr str_trim
-#' @importFrom textclean replace_non_ascii
 #'
 prepLoc <- function(x) {
 
   # Removing unwanted characters
-  x <- tolower(textclean::replace_non_ascii(x))
+  x <- tolower(rmLatin(x))
 
   # Correcting NAs converted to lower caracters
   x <- gsub("_na_", "_NA_", x, fixed = TRUE)
@@ -48,7 +47,7 @@ prepLoc <- function(x) {
   x <- gsub(" dos | das | des ", " ", x, perl = TRUE)
   x <- gsub(" do | da | de ", " ", x, perl = TRUE)
   # x <- gsub(' d\' | d\'| d`| d´| d\"| d’', " ", x, perl = TRUE)
-  x <- gsub(' d\' | d\'| d\x60| d\xB4| d\"| d’', " ", x, perl = TRUE)
+  x <- gsub(' d\' | d\'| d\u0060| d\u00b4| d\"| d\u2019', " ", x, perl = TRUE)
   x <- gsub('\\.$', "", x, perl = TRUE)
   x <- gsub(" dx ", " ", x, fixed = TRUE)
 
